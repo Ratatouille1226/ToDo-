@@ -38,25 +38,19 @@ document.addEventListener('DOMContentLoaded', () => {
         text: '',
       };
     
-      const addTask = target.elements.taskName.value;
-      let isTaskAlreadyExist = false; //Переменная для проверки на одинаковые задачи
-    
-      for (let i = 0; i < tasks.length; i++) { //Проверка на одинаковые задачи
-        if (tasks[i].text === addTask) {
-          isTaskAlreadyExist = true;
-        };
+      const formData = new FormData(target); 
+      const data = Object.fromEntries(formData.entries()); //value поля
+
+       if (!isValid(data)) { //Добавление ошибок
+        formSubmit.insertAdjacentElement('beforeend', errorRepeatingTheTask);
+        errorEmptyField.remove();
+      } else if (isValid(data)) {
+        formSubmit.insertAdjacentElement('beforeend', errorEmptyField);
+        errorRepeatingTheTask.remove();
       }
     
-          if (!addTask) { //Проверка какую ошибку нужно показать (если она есть)
-            formSubmit.insertAdjacentElement('beforeend', errorEmptyField);
-            errorRepeatingTheTask.remove();
-          } else if (isTaskAlreadyExist) {
-            formSubmit.insertAdjacentElement('beforeend', errorRepeatingTheTask);
-            errorEmptyField.remove();
-          }
-    
-          if (addTask && isTaskAlreadyExist === false) { //Добавление новой задачи и удаление ошибок (также нужно удалять ошибки в проверке, чтобы они не накладывались друг на друга)
-            newObj.text = addTask;
+          if (isValid(data) && data.taskName !== '') { //Добавление новой задачи и удаление ошибок (также нужно удалять ошибки в проверке, чтобы они не накладывались друг на друга)
+            newObj.text = data.taskName;
             tasks.unshift(newObj);
             addTaskList(tasksList, tasks);
             errorEmptyField.remove();
@@ -70,7 +64,12 @@ document.addEventListener('DOMContentLoaded', () => {
             });
           };
     });
-    
+
+    function isValid(formData) { //Валидация на повторяющиеся задачи
+      const {taskName: name} = formData;
+
+      return !tasks.find(task => task.text === name);
+    }
     
     const tasksList = document.querySelector('.tasks-list'); //Здесь задачи :)
     let taskIdList; //Хранение дата атрибута
